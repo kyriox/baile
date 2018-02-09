@@ -10,23 +10,6 @@ class node:
         self.delta=delta   # heuristic value
         self.op=op         # operation name which generated this node
 
-    # setters an getters
-    def getParent(self):
-        return self.parent
-    def getCost(self):
-        return self.cost
-    def getDepth(self):
-        return self.depth
-    def getOp(self):
-        return self.op
-    def setParent(self, parent):
-        self.parent=parent
-    def setCost(self, cost):
-        self.cost=cost
-    def setDepth(self, depth):
-        self.depth=depth
-    def setOp(self, op):
-        self.op=op
 
     # Finding the followed route by iteratively looking at his parent
     def getPath(self):
