@@ -34,6 +34,7 @@ class node:
             aux=aux.parent
         return path
     
+    #Nodes are compared using itc cost (e.i. less cost goes first)
     def __lt__(self, n):
         return  self.cost<n.cost
 
