@@ -27,59 +27,31 @@ class node:
 # Class for performing blin search
 
 class BlindSearch:
-   # def bfs(frontier,successors):
-   #     for s in successors:
-   #         frontier.insert(0,s)
-            
-    #def dfs(frontier,successors):
-    #    for s in successors:
-    #        frontier.append(s)
-    
-    #succesors=[x for x in self.successor(cs) if x.state not in self.visited]
-    #        if succesors:
-    #            [self.visited.add(x.state) for x in succesors] #extra work, but useful
-    #            self.add(self.frontier,succesors)
     
     def pop(self):
         if self.strategy=="a*":
             return heapq.heappop(self.frontier)
         else:
-            self.frontier.pop()
+            return self.frontier.pop()
     
     def bfs(self,cs):
         successors=[x for x in self.successor(cs) if x.state not in self.visited]
-        if successors:
-            [self.visited.add(x.state) for x in successors] #extra work, but useful
         for s in successors:
+                self.visited.add(s.state)
                 self.frontier.insert(0,s)
     
     def dfs(self,cs):
         successors=[x for x in self.successor(cs) if x.state not in self.visited]
-        if successors:
-            [self.visited.add(x.state) for x in successors] #extra work, but useful
         for s in successors:
+                self.visited.add(s.state)
                 self.frontier.append(s)
     
     def astar(self,cs):
         successors=[x for x in self.successor(cs) if x.state not in self.visited]
-        if successors:
-            [self.visited.add(x.state) for x in successors] #extra work, but useful
         for s in successors:
+                self.visited.add(s.state)
                 s.cost=self.heuristic(s,self.goal_state)
                 heapq.heappush(self.frontier, s)
-        #self.frontier.append(s)
-        #self.frontier.sort(key= lambda x: x.cost)
-    
-    #def dfs(self,successors):
-    #    for s in successors:
-    #            self.frontier.append(s)
-    
-    #def astar(self,succesors):
-        
-            
-    #def dfs(frontier,successors):
-    #    for s in successors:
-    #        frontier.append(s)
             
     strategies={"bfs":bfs,"dfs":dfs,"a*":astar}
     
