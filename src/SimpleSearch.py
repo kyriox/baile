@@ -34,11 +34,11 @@ class node:
             aux=aux.parent
         return path
     
-    #Nodes are compared using itc cost (e.i. less cost goes first)
+    #Nodes are compared using its cost (e.i. less cost goes first)
     def __lt__(self, n):
         return  self.cost<n.cost
 
-# Class for performing blin search
+# Class for performing blind search
 
 class BlindSearch:
     
@@ -82,7 +82,7 @@ class BlindSearch:
         self.heuristic=heuristic
 
     def find(self, max_iter=1000000, debug=False): 
-        i=0;
+        i=0
         current=self.start
         self.frontier=[current]
         self.visited=set([current.state])
@@ -92,9 +92,10 @@ class BlindSearch:
             if i%1000==0 and debug:
                 print("iteration: %s, node cost: %s" %(i,current.cost))
                 print("Is current state the goal?: %s" %self.goal(current,self.goal_state))
-                print(np.array(current.state))
+                print(current.state)
             current=self.pop()
         print("finished in %s iterations" %i)
+        print("Se acabaron los estados:", len(self.frontier))
         if self.goal(current,self.goal_state): 
             return current
         else:
