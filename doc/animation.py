@@ -59,6 +59,6 @@ stepsr.reverse()
 print(steps)
 
 
-ani = FuncAnimation(fig, anim.update, steps+stepsr,interval=1500, blit=True)
+ani = FuncAnimation(fig, anim.update, steps+stepsr,interval=1500)
 
 plt.show()
