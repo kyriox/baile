@@ -61,4 +61,9 @@ print(steps)
 
 ani = FuncAnimation(fig, anim.update, steps+stepsr,interval=1500)
 
+#pause
+ani.event_source.stop()
+
+#unpause
+ani.event_source.start()
 plt.show()
