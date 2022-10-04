@@ -76,7 +76,7 @@ class SimpleEC:
             optv=self.f(*[self._bin_to_real(x,bounds) for x,bounds in zip(code,self.bounds)])
         else:
             optv=self.f(*code)
-        return optv
+        return optv*self.opt
     
     def _proportional_selection(self, k=0):
         if not k:
