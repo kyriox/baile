@@ -5,14 +5,28 @@ from sympy.combinatorics.graycode import GrayCode, gray_to_bin
 from sklearn.preprocessing import normalize
 
 
+def proportional_selection(population,prob,k):
+    return [population[i] for i in [rnd.choice(len(population), p=prob) for i in range(k)]]
+
+def random_selection(population,k):
+    return [population[i] for i in [rnd.choice(len(population)) for i in range(k)]]
+
+def uniform_crossover(parents):
+    p1,p2=parents
+    h1=["".join([rnd.rand()>0.5 and x1[i] or x2[i] for  i in range(len(x1))]) 
+        for x1,x2 in (p1.code,p2.code)]
+    return h1
+
+
 class Chromosome:
     def __init__(self, code, fit=None, nfit=None, prob=None):
-        self.code=code
-        self.fit=fit
-        self.nfit=nfit
-        self.prob=prob
+        self.code=code #genotipo
+        self.fit=fit # fitness
+        self.nfit=nfit # fitness normalizado
+        self.prob=prob # probabilidad
     def __str__(self):
-        return f"Genotype: {self.code} Fitness: {self.fit} Probability: {self.prob}"
+        stcode='|'.join([str(x) for x in self.code])
+        return f"Genotype: {stcode} Fitness: {self.fit} Probability: {self.prob}"
 
 
 class SimpleEC:
@@ -49,24 +63,20 @@ class SimpleEC:
         self.population=population
         self._norm_fitness()
 
-    
-    def __init__(self,f,bounds, population_size=100, code_size=10, coding='g', opt=-1):
-        self.f=f
-        self.n=len(bounds)
-        self.bounds=bounds
-        self.code_size=code_size
-        self.coding=coding
-        self.population_size=population_size
-        self.opt=opt
-        self._initialize_population()
 
     def _norm_fitness(self):
-        data=np.array([gn.fit for gn in self.population])
-        self.fit=data
-        data=(data - np.min(data)) / (np.max(data) - np.min(data))
+        datax=np.array([gn.fit for gn in self.population])
+        datax=np.nan_to_num(datax,nan=1e-6)
+        self.fit=datax
+        #print("----------------",data)
+        data=(datax - np.min(datax)) / (np.max(datax) - np.min(datax))
         prob=data/np.sum(data)
         self.prob=prob
-        for gn,v,p in zip(self.population,data,prob):
+        #r=np.argwhere(np.isnan(prob))
+        #if len(r):
+        #    i=r[0,0]
+        #    print(data[i],datax[i],np.min(datax),np.max(datax))
+        for gn,v,p in zip(self.population,data,self.prob):
             gn.nfit,gn.prob=v,p
 
     def _fitness(self, code):
@@ -78,24 +88,16 @@ class SimpleEC:
             optv=self.f(*code)
         return optv*self.opt
     
-    def _proportional_selection(self, k=0):
-        if not k:
-            k=self.population_size
-        return [self.population[i] for i in [rnd.choice(len(self.population), p=self.prob) for i in range(k)]]
 
-    def _uniform_crossover(self,p1,p2):
-        h1=["".join([rnd.rand()>0.5 and x1[i] or x2[i] for  i in range(len(x1))]) for x1,x2 in (p1.code,p2.code)]
-        return h1
-    
     def _offspring(self, l=50):
         childs=[0 for i in range(l)]
         for i in range(l):
-            x1,x2=self._proportional_selection(k=2)
-            code=self._uniform_crossover(x1,x2)
+            parents=self._get_parents(self.population,self.prob,self.np)
+            code=self._crossover(parents)
             childs[i]=Chromosome(code,fit=self._fitness(code))
         self.population+=childs
         self._norm_fitness()
-        self.population=self._proportional_selection()
+        self.population=self._selection(self.population,self.prob,self.population_size)
         self._norm_fitness()
 
     def evolve(self, t=100):
@@ -104,8 +106,24 @@ class SimpleEC:
             fs=np.sort(-self.fit)
             avg.append(np.mean(-self.fit))
             best.append(fs[0])
-            self._offspring(100)
+            self._offspring()
         return avg, best
+
+    def __init__(self,f,bounds, population_size=100, code_size=10, np=2,
+                 parents_selection=random_selection, crossover=uniform_crossover,
+                 mutation=None,selection=proportional_selection,coding='g', opt=-1):
+        self.f=f
+        self.n=len(bounds)
+        self.bounds=bounds
+        self.code_size=code_size
+        self.coding=coding
+        self.population_size=population_size
+        self.opt=opt
+        self._crossover=crossover
+        self._selection=selection
+        self._get_parents=parents_selection
+        self.np=np
+        self._initialize_population()
         
 def eggholder(x1,x2):
   return -(x2+47)*np.sin(np.sqrt(np.abs(x2+x1/2+47)))-x1*np.sin(np.sqrt(np.abs(x1-(x2+47))))
