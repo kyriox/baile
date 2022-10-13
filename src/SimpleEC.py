@@ -77,19 +77,19 @@ class SimpleEC:
         return optv*self.opt
     
 
-    def _offspring(self, l=50):
+    def _offspring(self, l=100):
         childs=[0 for i in range(l)]
         kwargs=dict(population=self.population,prob=self.prob,
                     sample_size=self.np)
         for i in range(l):
-            parents=self._get_parents(**kwargs)
+            parents=self._get_parents(**kwargs) # quienes se reproduces
             code=self._crossover(parents)
             childs[i]=Chromosome(code,fit=self._fitness(code))
         self.population+=childs
         self._norm_fitness()
         kwargs['sample_size']=self.population_size
         kwargs['prob']=self.prob
-        self.population=self._selection(**kwargs)
+        self.population=self._selection(**kwargs) # quienes sobreviven
         self._norm_fitness()
 
 
