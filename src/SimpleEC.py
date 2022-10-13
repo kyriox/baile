@@ -3,19 +3,10 @@ import sympy as sp
 import numpy.random as rnd
 from sympy.combinatorics.graycode import GrayCode, gray_to_bin
 from sklearn.preprocessing import normalize
+from src.operators import *
 
 
-def proportional_selection(population,prob,k):
-    return [population[i] for i in [rnd.choice(len(population), p=prob) for i in range(k)]]
-
-def random_selection(population,k):
-    return [population[i] for i in [rnd.choice(len(population)) for i in range(k)]]
-
-def uniform_crossover(parents):
-    p1,p2=parents
-    h1=["".join([rnd.rand()>0.5 and x1[i] or x2[i] for  i in range(len(x1))]) 
-        for x1,x2 in (p1.code,p2.code)]
-    return h1
+#def undx()
 
 
 class Chromosome:
@@ -66,16 +57,12 @@ class SimpleEC:
 
     def _norm_fitness(self):
         datax=np.array([gn.fit for gn in self.population])
+        #print(datax.shape)
+        #print(datax)
         datax=np.nan_to_num(datax,nan=1e-6)
         self.fit=datax
-        #print("----------------",data)
         data=(datax - np.min(datax)) / (np.max(datax) - np.min(datax))
-        prob=data/np.sum(data)
-        self.prob=prob
-        #r=np.argwhere(np.isnan(prob))
-        #if len(r):
-        #    i=r[0,0]
-        #    print(data[i],datax[i],np.min(datax),np.max(datax))
+        self.prob=data/np.sum(data)
         for gn,v,p in zip(self.population,data,self.prob):
             gn.nfit,gn.prob=v,p
 
@@ -85,20 +72,26 @@ class SimpleEC:
         elif self.coding=='b':
             optv=self.f(*[self._bin_to_real(x,bounds) for x,bounds in zip(code,self.bounds)])
         else:
+            #print(code)
             optv=self.f(*code)
         return optv*self.opt
     
 
     def _offspring(self, l=50):
         childs=[0 for i in range(l)]
+        kwargs=dict(population=self.population,prob=self.prob,
+                    sample_size=self.np)
         for i in range(l):
-            parents=self._get_parents(self.population,self.prob,self.np)
+            parents=self._get_parents(**kwargs)
             code=self._crossover(parents)
             childs[i]=Chromosome(code,fit=self._fitness(code))
         self.population+=childs
         self._norm_fitness()
-        self.population=self._selection(self.population,self.prob,self.population_size)
+        kwargs['sample_size']=self.population_size
+        kwargs['prob']=self.prob
+        self.population=self._selection(**kwargs)
         self._norm_fitness()
+
 
     def evolve(self, t=100):
         avg,best=[],[]
