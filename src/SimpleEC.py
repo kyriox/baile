@@ -51,20 +51,23 @@ class SimpleEC:
                 codes=xmin + (xmax-xmin)*rnd.rand(self.population_size).reshape(-1,1)
                 population=np.hstack((population,codes))
         population=[Chromosome(code,self._fitness(code)) for code in population]
-        self.population=population
+        self.population=np.array(population)
         self._norm_fitness()
 
 
     def _norm_fitness(self):
         datax=np.array([gn.fit for gn in self.population])
-        #print(datax.shape)
-        #print(datax)
         datax=np.nan_to_num(datax,nan=1e-6)
         self.fit=datax
         data=(datax - np.min(datax)) / (np.max(datax) - np.min(datax))
         self.prob=data/np.sum(data)
         for gn,v,p in zip(self.population,data,self.prob):
             gn.nfit,gn.prob=v,p
+        idx=np.argsort(self.prob)[::-1][:len(self.prob)]
+        self.fit=self.fit[idx]
+        self.prob=self.prob[idx]
+        self.population=self.population[idx]
+        
 
     def _fitness(self, code):
         if self.coding=='g':
@@ -85,11 +88,12 @@ class SimpleEC:
             parents=self._get_parents(**kwargs) # quienes se reproduces
             code=self._crossover(parents)
             childs[i]=Chromosome(code,fit=self._fitness(code))
-        self.population+=childs
+        self.population=np.append(self.population,childs)
         self._norm_fitness()
         kwargs['sample_size']=self.population_size
         kwargs['prob']=self.prob
-        self.population=self._selection(**kwargs) # quienes sobreviven
+        kwargs['population']=self.population
+        self.population=np.array(self._selection(**kwargs)) # quienes sobreviven
         self._norm_fitness()
 
 
