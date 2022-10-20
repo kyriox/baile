@@ -37,6 +37,8 @@ class SimpleEC:
         if self.coding in ['g','b']:
             if type(self.code_size)==int:
                 self.codes_size=[self.code_size for s in  range(len(self.bounds))]
+            else:
+                self.codes_size=self.code_size
             self.c_size=sum(self.codes_size)
             csize=self.codes_size[0]
             population=np.array([''.join([str(i) for i in rnd.randint(0,2,csize)])
@@ -71,12 +73,12 @@ class SimpleEC:
 
     def _fitness(self, code):
         if self.coding=='g':
-            optv=self.f(*[self._gray_to_real(x,bounds) for x,bounds in zip(code,self.bounds)])
+            optv=self.f(*[self._gray_to_real(x,bounds) for x,bounds in zip(code,self.bounds)], **self.kwargs)
         elif self.coding=='b':
-            optv=self.f(*[self._bin_to_real(x,bounds) for x,bounds in zip(code,self.bounds)])
+            optv=self.f(*[self._bin_to_real(x,bounds) for x,bounds in zip(code,self.bounds)], **self.kwargs)
         else:
             #print(code)
-            optv=self.f(*code)
+            optv=self.f(*code,**self.kwargs)
         return optv*self.opt
     
 
@@ -108,7 +110,7 @@ class SimpleEC:
 
     def __init__(self,f,bounds, population_size=100, code_size=10, np=2,
                  parents_selection=random_selection, crossover=uniform_crossover,
-                 mutation=None,selection=proportional_selection,coding='g', opt=-1):
+                 mutation=None,selection=proportional_selection,coding='g', opt=-1,**kwargs):
         self.f=f
         self.n=len(bounds)
         self.bounds=bounds
@@ -120,6 +122,7 @@ class SimpleEC:
         self._selection=selection
         self._get_parents=parents_selection
         self.np=np
+        self.kwargs=kwargs
         self._initialize_population()
         
 def eggholder(x1,x2):

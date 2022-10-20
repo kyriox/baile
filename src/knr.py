@@ -1,4 +1,4 @@
-import pandas as pd
+#import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import random as rd
@@ -46,7 +46,8 @@ def wsplit(data, m, tau):
 
 
 class KNNR:
-    def __init__(self, m=3, tau=1, k=5, prediction_size=24, w='uniform', d='minkowski'):
+    def __init__(self, m=3, tau=1, k=5, prediction_size=24, w='uniform',
+                 d='minkowski'):
         self.m=m
         self.tau=tau
         self.w=w
@@ -68,7 +69,7 @@ class KNNR:
         m,tau,nn,d,w=self.m,self.tau,self.k,self.d,self.w
         ind=[-i for i in range(m*tau,0,-tau)]
         while len(pred)<n:
-            window=list(s[ind])
+            window=list(np.nan_to_num(s[ind],np.mean(s[ind])))
             val=self.regressor.predict([window])
             pred.append(val[0])
             s=np.append(s,val[0])

@@ -15,7 +15,7 @@ def random_selection(**kwargs):
 def uniform_crossover(parents):
     p1,p2=parents
     h1=["".join([rnd.rand()>0.5 and x1[i] or x2[i] for  i in range(len(x1))]) 
-        for x1,x2 in (p1.code,p2.code)]
+        for x1,x2 in zip(p1.code,p2.code)]
     return h1
 
 def undx(parents):
