@@ -107,7 +107,27 @@ class SimpleEC:
             best.append(fs[0])
             self._offspring()
         return avg, best
-
+    
+    def EC(self,f=0.5,cr=0.1,t=10):
+        for g in range(t):
+            p=[]
+            for i,x in enumerate(self.population):
+                N=self.population_size
+                c=rnd.permutation([j for j in range(N) if j!=i])
+                x1,x2,x3=self.population[c[:3]]
+                u=x1.code+f*(x2.code-x3.code)
+                v=np.zeros(len(x.code))
+                for k in range(len(x.code)): 
+                    if rnd.random()>cr:
+                        v[k]=x.code[k]
+                    else:
+                        v[k]=u[k]
+                if self.f(*x.code)<self.f(*v):
+                     p.append(x)
+                else:
+                     p.append(Chromosome(code=v))
+            self.population=np.array(p)
+     
     def __init__(self,f,bounds, population_size=100, code_size=10, np=2,
                  parents_selection=random_selection, crossover=uniform_crossover,
                  mutation=None,selection=proportional_selection,coding='g', opt=-1,**kwargs):
