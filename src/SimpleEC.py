@@ -61,7 +61,7 @@ class SimpleEC:
         datax=np.array([gn.fit for gn in self.population])
         datax=np.nan_to_num(datax,nan=1e-6)
         self.fit=datax
-        data=(datax - np.min(datax)) / (np.max(datax) - np.min(datax))
+        data=(datax - np.min(datax)+1e-16) / (np.max(datax) - np.min(datax)+1e-16)
         self.prob=data/np.sum(data)
         for gn,v,p in zip(self.population,data,self.prob):
             gn.nfit,gn.prob=v,p
