@@ -37,6 +37,8 @@ class SimpleEC:
         if self.coding in ['g','b']:
             if type(self.code_size)==int:
                 self.codes_size=[self.code_size for s in  range(len(self.bounds))]
+            else:
+                self.codes_size=self.code_size
             self.c_size=sum(self.codes_size)
             csize=self.codes_size[0]
             population=np.array([''.join([str(i) for i in rnd.randint(0,2,csize)])
@@ -59,7 +61,7 @@ class SimpleEC:
         datax=np.array([gn.fit for gn in self.population])
         datax=np.nan_to_num(datax,nan=1e-6)
         self.fit=datax
-        data=(datax - np.min(datax)) / (np.max(datax) - np.min(datax))
+        data=(datax - np.min(datax)+1e-16) / (np.max(datax) - np.min(datax)+1e-16)
         self.prob=data/np.sum(data)
         for gn,v,p in zip(self.population,data,self.prob):
             gn.nfit,gn.prob=v,p
@@ -71,12 +73,12 @@ class SimpleEC:
 
     def _fitness(self, code):
         if self.coding=='g':
-            optv=self.f(*[self._gray_to_real(x,bounds) for x,bounds in zip(code,self.bounds)])
+            optv=self.f(*[self._gray_to_real(x,bounds) for x,bounds in zip(code,self.bounds)], **self.kwargs)
         elif self.coding=='b':
-            optv=self.f(*[self._bin_to_real(x,bounds) for x,bounds in zip(code,self.bounds)])
+            optv=self.f(*[self._bin_to_real(x,bounds) for x,bounds in zip(code,self.bounds)], **self.kwargs)
         else:
             #print(code)
-            optv=self.f(*code)
+            optv=self.f(*code,**self.kwargs)
         return optv*self.opt
     
 
@@ -105,10 +107,30 @@ class SimpleEC:
             best.append(fs[0])
             self._offspring()
         return avg, best
-
+    
+    def EC(self,f=0.5,cr=0.1,t=10):
+        for g in range(t):
+            p=[]
+            for i,x in enumerate(self.population):
+                N=self.population_size
+                c=rnd.permutation([j for j in range(N) if j!=i])
+                x1,x2,x3=self.population[c[:3]]
+                u=x1.code+f*(x2.code-x3.code)
+                v=np.zeros(len(x.code))
+                for k in range(len(x.code)): 
+                    if rnd.random()>cr:
+                        v[k]=x.code[k]
+                    else:
+                        v[k]=u[k]
+                if self.f(*x.code)<self.f(*v):
+                     p.append(x)
+                else:
+                     p.append(Chromosome(code=v))
+            self.population=np.array(p)
+     
     def __init__(self,f,bounds, population_size=100, code_size=10, np=2,
                  parents_selection=random_selection, crossover=uniform_crossover,
-                 mutation=None,selection=proportional_selection,coding='g', opt=-1):
+                 mutation=None,selection=proportional_selection,coding='g', opt=-1,**kwargs):
         self.f=f
         self.n=len(bounds)
         self.bounds=bounds
@@ -120,6 +142,7 @@ class SimpleEC:
         self._selection=selection
         self._get_parents=parents_selection
         self.np=np
+        self.kwargs=kwargs
         self._initialize_population()
         
 def eggholder(x1,x2):
