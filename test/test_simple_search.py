@@ -56,28 +56,28 @@ class EightPuzzle(unittest.TestCase):
     not_found=ss.node('Solution not found', op="not_found")
     
     def test_eight_puzzle_bfs(self):    
-       bfs=ss.BlindSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="bfs")
+       bfs=ss.TreeSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="bfs")
        result=bfs.find()
        self.assertTupleEqual(result.state, self.final.state)
 
     def test_eight_puzzle_dfs(self):    
-       dfs=ss.BlindSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="dfs")
+       dfs=ss.TreeSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="dfs")
        result=dfs.find()
        self.assertTupleEqual(result.state, self.final.state)
 
     def test_eight_puzzle_astar(self):    
-       ass=ss.BlindSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="a*",
+       ass=ss.TreeSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="a*",
                           heuristic=manhattan)
        result=ass.find()
        self.assertTupleEqual(result.state, self.final.state)
 
     def test_eight_puzzle_not_found(self):    
-       bfs=ss.BlindSearch(self.wrong_start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="bfs")
+       bfs=ss.TreeSearch(self.wrong_start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="bfs")
        result=bfs.find(max_iter=1000)
        self.assertEqual(result.state, self.not_found.state)
 
     def test_path(self):    
-       dfs=ss.BlindSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="dfs")
+       dfs=ss.TreeSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="dfs")
        result=dfs.find()
        root=result.getPath()[0]
        self.assertTupleEqual(root[0], self.start.state)
@@ -119,17 +119,17 @@ class NQueens(unittest.TestCase):
     start=ss.node((0,0,0,0,0),op="start")
 
     def test_n_queens_bfs(self):    
-       bfs=ss.BlindSearch(self.start,successorNQueens,goalNQueens,strategy="bfs")
+       bfs=ss.TreeSearch(self.start,successorNQueens,goalNQueens,strategy="bfs")
        result=bfs.find()
        self.assertEqual(countAttacks(result),0)
 
     def test_n_queens_dfs(self): 
-       dfs=ss.BlindSearch(self.start,successorNQueens,goalNQueens,strategy="dfs")
+       dfs=ss.TreeSearch(self.start,successorNQueens,goalNQueens,strategy="dfs")
        result=dfs.find()
        self.assertEqual(countAttacks(result),0)   
 
     def test_n_queens_astar(self): 
-       ass=ss.BlindSearch(self.start,successorNQueens,goalNQueens,strategy="a*",heuristic=countAttacks)
+       ass=ss.TreeSearch(self.start,successorNQueens,goalNQueens,strategy="a*",heuristic=countAttacks)
        result=ass.find()
        self.assertEqual(countAttacks(result),0)   
     
