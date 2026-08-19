@@ -53,8 +53,7 @@ class EightPuzzle(unittest.TestCase):
     start=ss.node(((7,2,4),(5,0,6),(8,3,1)),op="start")
     final=ss.node(((0,1,2),(3,4,5),(6,7,8)),op="final")
     wrong_start=ss.node(((2,7,4),(5,0,6),(8,3,1)),op="wrong_start")
-    not_found=ss.node('Solution not found', op="not_found")
-    
+
     def test_eight_puzzle_bfs(self):    
        bfs=ss.TreeSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="bfs")
        result=bfs.find()
@@ -71,10 +70,18 @@ class EightPuzzle(unittest.TestCase):
        result=ass.find()
        self.assertTupleEqual(result.state, self.final.state)
 
-    def test_eight_puzzle_not_found(self):    
+    def test_eight_puzzle_not_found(self):
        bfs=ss.TreeSearch(self.wrong_start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="bfs")
        result=bfs.find(max_iter=1000)
-       self.assertEqual(result.state, self.not_found.state)
+       self.assertIsNone(result) # find() returns None when there is no solution
+
+    # A* with an admissible heuristic must return a path as short as BFS
+    def test_eight_puzzle_astar_is_optimal(self):
+       bfs=ss.TreeSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="bfs")
+       ass=ss.TreeSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="a*",
+                         heuristic=manhattan)
+       self.assertEqual(ass.find().depth, bfs.find().depth)
+       self.assertLess(ass.iterations, bfs.iterations) # and it expands fewer nodes
 
     def test_path(self):    
        dfs=ss.TreeSearch(self.start,successor8Puzzle,goal8Puzzle,goal_state=self.final,strategy="dfs")
