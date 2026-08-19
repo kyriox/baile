@@ -40,7 +40,7 @@ class node:
 
 # Class for performing blind search
 
-class BlindSearch:
+class TreeSearch:
     
     def pop(self):
         if self.strategy=="a*":
