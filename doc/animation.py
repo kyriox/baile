@@ -43,7 +43,7 @@ class puzzle8Anim:
 start=ss.node(((1,8,4),(3,0,2),(6,5,7)),op="start")
 final=ss.node(((1,2,3),(4,5,6),(7,8,0)),op="final")
 
-bfs=ss.BlindSearch(start,successor8Puzzle,goal8Puzzle,goal_state=final,strategy="bfs")
+bfs=ss.TreeSearch(start,successor8Puzzle,goal8Puzzle,goal_state=final,strategy="bfs")
 result=bfs.find(max_iter=500000)
 
 steps=result.getPath()
