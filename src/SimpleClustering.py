@@ -23,11 +23,13 @@ def coseno(x,y):
 def plotClusters(data,labels,centroids={},f="",centroids_txt_labels={}):
     fig=plt.figure(figsize=(6, 6))
     sbox = dict(boxstyle='round', facecolor='white', alpha=0.4)
-    d=len(data[1])
+    data=np.asarray(data)
+    d=data.shape[1] # dimensión de los datos (número de columnas)
     if d==3:
         ax = fig.add_subplot(111, projection='3d')
     else:
         ax = fig.add_subplot(111)
+    labels=np.asarray(labels)
     K=np.unique(labels)
     color_map=iter(cm.viridis(np.linspace(0,1,len(K))))
     for k in K:
@@ -47,7 +49,7 @@ def plotClusters(data,labels,centroids={},f="",centroids_txt_labels={}):
             else:
                 xc,yc=centroids[k]
                 ax.text(xc,yc,txt_label,bbox=sbox,fontsize=14)
-    if len(data[0])==3:
+    if d==3:
         ax.set_zticks([])
     ax.set_xticks([])
     ax.set_yticks([])
@@ -76,28 +78,36 @@ def plotPCA(data, labels, d=2,f="",centroids={},vectors=True):
 # Plantilla simple para implementar métodos de clustering
 class Clustering:
     
-    ## Calcular SSE se usa inertia igual que en la implementacion de sckit-learn 
+    # Distancia de un elemento x a su centroide más cercano.
+    # Devuelve la pareja (distancia, id_del_cluster)
+    def _nearest_centroid(self,x):
+        return min((self.distance_function(c,x),i)
+                   for i,c in self.centroids_.items())
+
+    ## Calcular SSE, se usa inertia igual que en la implementacion de sckit-learn
+    ## SSE = suma de las distancias AL CUADRADO de cada elemento a su centroide MAS CERCANO
     def _inertia(self):
         self.inertia_=0
-        for j in range(len(self.data)):
-            dists=[(self.distance_function(c,self.data[j]),i) for i,c in self.centroids_.items()]
-            self.inertia_+=dists[0][0]
-            
+        for x in self.data:
+            d,i=self._nearest_centroid(x) # el más cercano, no uno cualquiera
+            self.inertia_+=d**2           # al cuadrado, como en la definición del SSE
+
     # asigna los elementos en la colección a su centroide más cercano
-    # genera las etiquetas de los clusters 
+    # genera las etiquetas de los clusters
     def _assign_nearest_centroids(self):
          self.labels_=[-1 for x in self.data]
-         for j in range(len(self.data)):
-             dists=[(self.distance_function(c,self.data[j]),i,self.data[j])
-                    for i,c in self.centroids_.items()]
-             dists.sort()
-             self.labels_[j]=dists[0][1]
-       
+         for j,x in enumerate(self.data):
+             d,i=self._nearest_centroid(x)
+             self.labels_[j]=i
+
     # Ejemplo de random Clustering, es equivalente a la primera iteración de KMeans
     def randomClustering(self):
-         # seleccionamos K elmentos de forma aleatoria
-         idx=np.random.randint(self.data.shape[0], size=self.n_clusters)
-         self.centroids_=dict(zip(idx,self.data[idx,:])) # creamos un diccionario {id_cluster: vector} 
+         # seleccionamos K elmentos distintos de forma aleatoria.
+         # replace=False evita elegir dos veces el mismo elemento, que daría
+         # menos de K clusters
+         idx=np.random.choice(self.data.shape[0], self.n_clusters, replace=False)
+         # diccionario {id_cluster: vector}, con los ids 0..K-1 como en scikit-learn
+         self.centroids_=dict(enumerate(self.data[idx,:]))
          self._assign_nearest_centroids() #asignamos las etiquetas
          self._inertia() # calculamos el SSE
          return self
@@ -117,11 +127,9 @@ class Clustering:
     #Metodo que asinga un clusters a los elementos en data
     def predict(self,data):
         labels=[-1 for x in data]
-        for j in range(len(data)):
-            dists=[(self.distance_function(c,data[j]),i,data[j])
-                    for i,c in self.centroids_.items()]
-            dists.sort()
-            labels[j]=dists[0][1]
+        for j,x in enumerate(data):
+            d,i=self._nearest_centroid(x)
+            labels[j]=i
         return np.array(labels)
     #estructura propuesta para los algoritmos
     # La variable algorithm es un string con el nombre de su función de clustering
